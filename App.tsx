@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import GardenScene from './components/GardenScene';
 import ControlPanel from './components/ControlPanel';
 import { FlowerConfig, PetalShape, LeafShape } from './types';
+import { MousePointer2 } from 'lucide-react';
 
 const getRandomEnumValue = (anEnum: any) => {
   const values = Object.values(anEnum);
@@ -29,12 +30,11 @@ const App: React.FC = () => {
   const [isRandomMode, setIsRandomMode] = useState<boolean>(true);
   const [currentTemplate, setCurrentTemplate] = useState<Omit<FlowerConfig, 'id' | 'position'>>(generateRandomFlowerConfig());
 
-  // 初始化花园
   useEffect(() => {
-    const initialFlowers: FlowerConfig[] = Array.from({ length: 3 }).map((_, i) => ({
+    const initialFlowers: FlowerConfig[] = Array.from({ length: 4 }).map((_, i) => ({
       ...generateRandomFlowerConfig(),
       id: `init-${i}`,
-      position: [(Math.random() - 0.5) * 20, 0, (Math.random() - 0.5) * 20]
+      position: [(Math.random() - 0.5) * 25, 0, (Math.random() - 0.5) * 25]
     }));
     setFlowers(initialFlowers);
   }, []);
@@ -47,8 +47,6 @@ const App: React.FC = () => {
       position: pos
     };
     setFlowers(prev => [...prev, newFlower]);
-    
-    // 随机模式下更新模板，以便用户切换模式后能基于上一朵进行修改
     if (isRandomMode) {
       setCurrentTemplate(config);
     }
@@ -56,15 +54,15 @@ const App: React.FC = () => {
 
   const handlePlantRandomly = () => {
     const pos: [number, number, number] = [
-      (Math.random() - 0.5) * 40,
+      (Math.random() - 0.5) * 45,
       0,
-      (Math.random() - 0.5) * 40
+      (Math.random() - 0.5) * 45
     ];
     handlePlantAtPosition(pos);
   };
 
   const handleClear = () => {
-    if (confirm("确定要清空花园中所有的花朵吗？")) {
+    if (confirm("✨ 确定要通过这一场神圣的雨水清空花园吗？")) {
       setFlowers([]);
     }
   };
@@ -74,7 +72,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="relative w-screen h-screen">
+    <div className="relative w-screen h-screen bg-black">
       <GardenScene 
         timeOfDay={timeOfDay} 
         flowers={flowers} 
@@ -93,21 +91,37 @@ const App: React.FC = () => {
         onShuffle={shuffleTemplate}
       />
 
-      {/* 悬浮信息 */}
-      <div className="absolute top-4 right-4 text-white/60 text-[11px] pointer-events-none text-right uppercase tracking-[0.2em] font-bold">
-        空灵禅意花园 v1.3<br/>
-        {isRandomMode ? "随机种子模式已激活" : "设计师模式已激活"}<br/>
-        点击地面即可播种 • 动态生长模拟
+      {/* 顶部右侧标语 - 缩小尺寸 */}
+      <div className="absolute top-6 right-6 text-white text-right pointer-events-none drop-shadow-lg">
+        <div className="text-xl font-black italic bg-gradient-to-l from-white to-pink-300 bg-clip-text text-transparent">梦幻禅境 V2.0</div>
+        <div className="text-[9px] font-black tracking-[0.3em] text-pink-400/80 mt-1 uppercase">
+          {isRandomMode ? "● 随机创世 ●" : "● 精密设计 ●"}
+        </div>
       </div>
 
-      {/* 底部状态栏 */}
-      <div className="absolute bottom-6 right-8 text-white/90 bg-slate-900/80 px-6 py-4 rounded-3xl backdrop-blur-xl flex items-center gap-8 text-sm border border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all">
-        <div className="flex items-center gap-3">
-          <span className={`w-3 h-3 rounded-full ${isRandomMode ? 'bg-purple-500 animate-pulse' : 'bg-emerald-500 animate-pulse'} shadow-[0_0_12px_rgba(16,185,129,0.8)]`}></span>
-          <span className="font-bold">园内植株: <span className="text-pink-400 text-lg">{flowers.length}</span></span>
+      {/* 底部状态栏 - 缩小尺寸 */}
+      <div className="absolute bottom-6 right-6 flex items-center gap-4">
+        <div className="bg-slate-900/80 border border-white/20 px-4 py-2 rounded-2xl shadow-xl backdrop-blur-md flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${isRandomMode ? 'bg-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.8)]' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]'} animate-pulse`}></div>
+            <span className="text-white font-bold text-xs">
+              植株: <span className="text-pink-400 font-mono ml-1">{flowers.length}</span>
+            </span>
+          </div>
+          <div className="h-4 w-[1px] bg-white/10"></div>
+          <div className="flex flex-col text-right">
+            <span className="text-[8px] text-white/40 font-black tracking-widest uppercase">环境光效</span>
+            <span className="text-[10px] font-black text-emerald-400">
+              {timeOfDay > 6 && timeOfDay < 18 ? "黄金日间" : "幽邃夜色"}
+            </span>
+          </div>
         </div>
-        <div className="text-xs text-white/40 font-mono tracking-widest border-l border-white/10 pl-8">
-          环境光效: {timeOfDay > 6 && timeOfDay < 18 ? "日间模式" : "夜间模式"}
+      </div>
+
+      {/* 底部交互提示 */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-none">
+        <div className="bg-black/40 border border-white/10 px-4 py-1 rounded-full backdrop-blur-md text-white/50 font-black text-[8px] tracking-[0.3em] uppercase animate-bounce">
+          点击草地，播撒种子
         </div>
       </div>
     </div>
